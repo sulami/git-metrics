@@ -1,11 +1,11 @@
-.mode csv
-.separator '|'
-CREATE TABLE metrics (
-  "month" TEXT,
+DROP TABLE IF EXISTS stats;
+CREATE TABLE stats (
+  "sha" TEXT,
+  "timestamp" TIMESTAMP,
+  "author" TEXT,
+  "subject" TEXT,
   "service" TEXT,
-  "merges" INTEGER,
-  "reverts" INTEGER,
+  "changed" INTEGER,
   "inserts" INTEGER,
   "deletes" INTEGER
 );
-.import out.csv metrics

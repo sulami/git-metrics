@@ -3,7 +3,7 @@
 helpFunction()
 {
    echo ""
-   echo "Usage: -o out.csv -r ../repo1 -r ../repo2"
+   echo "Usage: -o git.sqlite -r ../repo1 -r ../repo2"
    exit 1
 }
 
@@ -23,8 +23,17 @@ then
 fi
 
 SCRIPT="$PWD/metrics.awk"
+CSV_BRIDGE=$(mktemp)
 
-echo "month|service|merges|reverts|inserts|deletes" > $out
+# hash | timestamp | author | subject
 for repo in "${repos[@]}"; do
-  (cd $repo; git log --pretty="@%cs,%s,"  --shortstat |  tr "\n\  " " "  | tr "@" "\n" | gawk -v service="$repo" -f $SCRIPT | sort -r ) >> $out
+    (cd $repo; \
+     git log --pretty="MARK%h|%aI|%aN|%s|" --shortstat | \
+         tr '\n\  ' ' ' | \
+         sed 's/MARK/\n/g' | \
+         gawk -v service="$(basename $repo)" -f $SCRIPT) >> $CSV_BRIDGE
 done
+
+sqlite3 $out < schema.sql
+sqlite3 $out ".import $CSV_BRIDGE stats"
+sqlite3 $out -cmd ".mode table"
