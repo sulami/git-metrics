@@ -31,6 +31,8 @@ for repo in "${repos[@]}"; do
      git log --pretty="MARK%h|%aI|%aN|%s|" --shortstat | \
          tr '\n\  ' ' ' | \
          sed 's/MARK/\n/g' | \
+         sed 's/%/%%/g' | \
+         sed 's/"/\\"/g' | \
          grep '.' | \
          gawk -v service="$(basename $repo)" -f $SCRIPT) >> $CSV_BRIDGE
 done
